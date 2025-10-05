@@ -1,5 +1,16 @@
 # Soft Handover Docker Container Installation 
 
+Soft Handover is a project for safely performing human-to-robot handovers using Python, ROS, and Docker containers. This README provides step-by-step instructions to build and run the two containers.
+
+## Important Note About the MoveIt Workspace
+
+The `moveit_ws` folder **is not included in this GitHub repository** because it is too large.  
+To use MoveIt, you will need to download the workspace yourself, following the official instructions:
+
+- [MoveIt Installation Guide](https://moveit.ros.org/install/)
+
+After downloading the workspace, make sure to place it in the `Soft_handover_docker/moveit_ws` directory, and then proceed with the regular installation steps below.
+
 ## 1) Open a terminal
 Navigate into the `Soft_handover_docker` project folder.
 
