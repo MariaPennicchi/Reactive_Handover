@@ -1,0 +1,71 @@
+<launch>
+  <arg name="camera_type" default="kinect_v1" />
+  <param name="camera_type" value="$(arg camera_type)"/>
+  <param name="debug" value="true"/>
+  <arg name="end_effector" default="hand" />
+  <param name="end_effector" value="$(arg robot)"/>   <!-- hand | gripper -->
+  <param name="descent_mode" value="position"/>  <!-- position | impedance -->
+  <arg name="robot" default="panda" />
+  <param name="robot" value="$(arg robot)"/>
+  <!-- <param name="use_sim_time" value="true"/> --> <!--Uncomment this if you use rosbag play-->
+
+  <group if="$(eval camera_type == 'realsense')">
+    <param name="rgb_topic" value="/camera/color/image_raw"/>
+    <param name="depth_topic" value="/camera/aligned_depth_to_color/image_raw"/>
+    <param name="camera_info_topic" value="/camera/aligned_depth_to_color/camera_info"/>
+    <param name="camera_frame_name" value="camera_color_optical_frame"/>
+  </group>
+
+  <group if="$(eval camera_type == 'kinect_v1')">
+    <param name="rgb_topic" value="/camera/rgb/image_color"/>
+    <param name="depth_topic" value="/camera/depth_registered/image_raw"/>
+    <param name="camera_info_topic" value="/camera/depth_registered/camera_info"/>
+    <param name="camera_frame_name" value="/camera_rgb_optical_frame"/>
+  </group>
+
+  <group if="$(eval camera_type == 'kinect_v2')">
+    <param name="rgb_topic" value="/kinect2/qhd/image_color"/>
+    <param name="depth_topic" value="/kinect2/qhd/image_depth_rect"/>
+    <param name="camera_info_topic" value="/kinect2/qhd/camera_info"/>
+    <param name="camera_frame_name" value="/kinect2_rgb_optical_frame"/>
+  </group>
+
+
+<!--   <include file="$(find realsense2_camera)/launch/rs_camera.launch"> -->
+<!--     <arg name="align_depth" value="true" /> -->
+<!--     <arg name="filters" value="pointcloud"/> -->
+<!--   </include> -->
+
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher1" args="-0.4647094421014152 0.4792278653062675 0.6021629160603923 0.08729897448593724 0.26120729491284383 -0.3380480410316227 0.9001489851513257 marker_table camera_link 50"/>
+  <!-- <node pkg="tf" type="static_transform_publisher" name="world_to_marker_table" args="0.53 0.02 -0.01 0 0 0.7071 0.7071 panda_link0 marker_table 10"/> -->
+  <node pkg="tf" type="static_transform_publisher" name="world_to_marker_table" args="0.79 -0.015 -0.0 0 0 0.7071 0.7071 panda_link0 marker_table 10"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher2" args="0 0 0 0 0 0 world panda_link0 50" />
+
+  <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher3" args="0.619 -0.011 0.001 0.5 0.5 0.5 0.5 world leap_hands 100" />
+
+  <!-- <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher3" args="0 0 0 0 0 0 world leap_hands 50" /> -->
+  <param name="robot_description_planning/shape_transform_cache_lookup_wait_time" value="0.5" />
+
+  <node pkg="soft_handover" type="mediapipe_node.py" name="mediapipe_node" output="screen"/>
+  <node pkg="soft_handover" type="object_extractor_node.py" name="object_extractor" output="screen"/>
+  <node pkg="soft_handover" type="bb_compute_node.py" name="bounding_box_compute" output="screen"/>
+  <node pkg="soft_handover" type="pose_planner.py" name="pose_planner" output="screen"/>
+  <node pkg="soft_handover" type="occlusion_node.py" name="occlusion_node" output="screen"/>
+  <node pkg="soft_handover" type="fsm_node.py" name="fsm_node" output="screen"/>
+  <!-- <node pkg="soft_handover" type="delivery_node.py" name="delivery_node" output="screen"/> -->
+  <node pkg="soft_handover" type="timer_node.py" name="timer_node" output="screen"/>
+
+  
+  <!-- questo avvia moveit -->
+  <!-- <node pkg="soft_handover" type="panda_moveit_node_position.py" name="panda_moveit_node_position" output="screen"/>  -->
+  <node pkg="soft_handover" type="panda_moveit_node_simulation.py" name="panda_moveit_node_uncertainty" output="screen"/>  <!-- PROPOSED ALGORITHM -->
+  <!-- <node pkg="soft_handover" type="panda_moveit_node_simulation_go_to_home.py" name="panda_moveit_node_uncertainty" output="screen"/> --> <!--uncomment this if want to use BASELINE ALGORITHM, and comment the PROPOSED ALGORITHM line -->
+  <!-- <node pkg="soft_handover" type="panda_moveit_node.py" name="panda_moveit_node" output="screen"/>  -->
+  <!-- <node pkg="soft_handover" type="obstacles_node.py" name="obstacles_node" output="screen"/> -->
+
+  <remap from="/franka_state_controller/joint_states" to="/joint_states"/>
+  
+
+
+</launch>

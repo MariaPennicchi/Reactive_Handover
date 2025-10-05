@@ -1,0 +1,3 @@
+Header header
+vision_msgs/BoundingBox3D bounding_box_3D
+float32 probability
